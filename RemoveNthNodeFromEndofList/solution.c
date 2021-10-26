@@ -10,6 +10,25 @@ int count;
 struct ListNode* rem;
 struct ListNode* prev;
 
+struct ListNode* removeNthFromEnd(struct ListNode* head, int n){
+  struct ListNode * last = head;
+  struct ListNode * start = head;
+  while ((last != NULL) && (n > 0)){
+    last = last->next;
+    n--;
+  }
+  if (last == NULL){
+    head = head->next;
+    return head;
+  }
+  while (last->next != NULL){
+    start = start->next;
+    last = last->next;
+  }
+  start->next = start->next->next;
+  return head;
+}
+
 void dfs(struct ListNode * head, int n){
     if (head == NULL){
         return;
