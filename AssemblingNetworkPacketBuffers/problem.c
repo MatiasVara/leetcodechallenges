@@ -12,13 +12,13 @@
  *
  * Your task is to implement code marked with "TODO" comments below.
  */
- 
+
 #include <assert.h>
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdlib.h>
 #include <string.h>
- 
+
 /* TODO include C Standard Library headers if necessary */
 #include <string.h>
 
@@ -30,7 +30,7 @@ struct pktbuf {
     struct pktbuf * tail;
     /* TODO additional fields to support pktbuf_join() */
 };
- 
+
 /**
  * pktbuf_create:
  * @data: packet payload
@@ -47,15 +47,15 @@ struct pktbuf *pktbuf_create(void *data, size_t len)
     if (!pkt) {
         return NULL;
     }
- 
+
     pkt->data = data;
     pkt->len = len;
     /* TODO initialize additional fields */
     pkt->next = NULL;
-    pkt->tail = NULL;
+    pkt->tail = pkt;
     return pkt;
 }
- 
+
 /**
  * pktbuf_destroy:
  * @pkt: the packet to destroy
@@ -74,7 +74,7 @@ void pktbuf_destroy(struct pktbuf *pkt)
       pk = next;
     }
 }
- 
+
 /**
  * pktbuf_join:
  * @head: the first packet buffer
@@ -109,17 +109,11 @@ bool pktbuf_join(struct pktbuf *head, struct pktbuf *tail)
      * Note: pick a simple data structure since you have 30 minutes for this
      * exercise.
      */
-     if ((head->next == NULL) && (head->tail== NULL)){
-       head->next = tail;
-       head->tail = tail;
-       //tail->next = NULL;
-       return true;
-     }
      head->tail->next = tail;
-     head->tail = tail;
+     head->tail = tail->tail;
      return true;
 }
- 
+
 /**
  * pktbuf_copy_out:
  * @pkt: the source packet buffer
@@ -150,7 +144,7 @@ size_t pktbuf_copy_out(struct pktbuf *pkt, void *out, size_t outlen)
     }
     return ret;
 }
- 
+
 /* Test cases - reading code below this line is not necessary */
 int main(int argc, char **argv)
 {
@@ -161,7 +155,7 @@ int main(int argc, char **argv)
     struct pktbuf *b;
     struct pktbuf *c;
     char out[4]; /* one more byte than needed to test pktbuf_copy_out() */
- 
+
     /* Join a and b, then c */
     assert((payload_a = strdup("a")));
     assert((a = pktbuf_create(payload_a, 1)));
@@ -169,40 +163,40 @@ int main(int argc, char **argv)
     assert((b = pktbuf_create(payload_b, 1)));
     assert((payload_c = strdup("c")));
     assert((c = pktbuf_create(payload_c, 1)));
- 
+
     assert(pktbuf_copy_out(a, out, sizeof(out)) == 1);
     assert(out[0] == 'a');
     assert(pktbuf_copy_out(b, out, sizeof(out)) == 1);
     assert(out[0] == 'b');
     assert(pktbuf_copy_out(c, out, sizeof(out)) == 1);
     assert(out[0] == 'c');
- 
+
     assert(pktbuf_join(a, b));
     assert(pktbuf_copy_out(a, out, sizeof(out)) == 2);
     assert(out[0] == 'a');
     assert(out[1] == 'b');
- 
+
     /* pktbuf_copy_out() with a larger output memory buffer */
     assert(pktbuf_join(a, c));
     assert(pktbuf_copy_out(a, out, sizeof(out)) == 3);
     assert(out[0] == 'a');
     assert(out[1] == 'b');
     assert(out[2] == 'c');
- 
+
     /* pktbuf_copy_out() with an exactly sized output memory buffer */
     memset(out, 0, sizeof(out));
     assert(pktbuf_copy_out(a, out, 3) == 3);
     assert(out[0] == 'a');
     assert(out[1] == 'b');
     assert(out[2] == 'c');
- 
+
     /* pktbuf_copy_out() with a short output memory buffer */
     memset(out, 0, sizeof(out));
     assert(pktbuf_copy_out(a, out, 1) == 1);
     assert(out[0] == 'a');
- 
+
     pktbuf_destroy(a);
- 
+
     /* Join b and c, then a */
     assert((payload_a = strdup("a")));
     assert((a = pktbuf_create(payload_a, 1)));
@@ -210,7 +204,7 @@ int main(int argc, char **argv)
     assert((b = pktbuf_create(payload_b, 1)));
     assert((payload_c = strdup("c")));
     assert((c = pktbuf_create(payload_c, 1)));
- 
+
     memset(out, 0, sizeof(out));
     assert(pktbuf_copy_out(a, out, sizeof(out)) == 1);
     assert(out[0] == 'a');
@@ -218,7 +212,7 @@ int main(int argc, char **argv)
     assert(out[0] == 'b');
     assert(pktbuf_copy_out(c, out, sizeof(out)) == 1);
     assert(out[0] == 'c');
- 
+
     assert(pktbuf_join(b, c));
     assert(pktbuf_copy_out(b, out, sizeof(out)) == 2);
     assert(out[0] == 'b');
@@ -230,8 +224,8 @@ int main(int argc, char **argv)
     assert(out[0] == 'a');
     assert(out[1] == 'b');
     assert(out[2] == 'c');
- 
+
     pktbuf_destroy(a);
- 
+
     return 0;
 }
