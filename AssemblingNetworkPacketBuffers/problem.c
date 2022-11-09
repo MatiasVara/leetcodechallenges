@@ -224,6 +224,8 @@ int main(int argc, char **argv)
     assert(out[0] == 'a');
     assert(out[1] == 'b');
     assert(out[2] == 'c');
+    char * r = a->tail->data;
+    assert(*r == 'c');
 
     pktbuf_destroy(a);
 
